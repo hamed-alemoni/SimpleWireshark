@@ -14,11 +14,14 @@ from controller.table_widget_contoller import set_column_names
 from controller.start_button_controller import run_sniffing_in_thread
 from controller.stop_button_controller import stop_sniffing_thread
 from controller.show_info_button_controller import show_info_according_to_selected_row
-from controller.clear_button_controller import clear_table_widget
+from controller.clear_table_widget_button_controller import clear_table_widget
+from controller.apply_button_controller import search_in_table_widget
+from controller.clear_text_edit_button_controller import clear_text_edit
+from controller.clear_list_widget_button_controller import clear_list_widget
 
 class Ui_MainWindow(object):
     NUMBER_OF_TABLE_WIDGET_COLUMN = 5
-
+    COLUMN_NAMES = ['No.', 'IP Version', 'Source', 'Destination', 'Protocol']
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1107, 836)
@@ -27,12 +30,6 @@ class Ui_MainWindow(object):
         self.listWidget = QtWidgets.QListWidget(self.centralwidget)
         self.listWidget.setGeometry(QtCore.QRect(60, 430, 1001, 261))
         self.listWidget.setObjectName("listWidget")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(360, 10, 55, 51))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.label.setFont(font)
-        self.label.setObjectName("label")
         self.start_btn = QtWidgets.QPushButton(self.centralwidget)
         self.start_btn.setGeometry(QtCore.QRect(70, 720, 93, 28))
         self.start_btn.setObjectName("start_btn")
@@ -42,19 +39,25 @@ class Ui_MainWindow(object):
         self.show_btn = QtWidgets.QPushButton(self.centralwidget)
         self.show_btn.setGeometry(QtCore.QRect(290, 720, 93, 28))
         self.show_btn.setObjectName('show_btn')
-        self.clear_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.clear_btn.setGeometry(QtCore.QRect(400, 720, 93, 28))
-        self.clear_btn.setObjectName('clear_btn')
+        self.clear_table_widget_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.clear_table_widget_btn.setGeometry(QtCore.QRect(400, 720, 93, 28))
+        self.clear_table_widget_btn.setObjectName('clear_table_widget_btn')
 
-        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(690, 20, 93, 28))
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_4.setGeometry(QtCore.QRect(800, 20, 93, 28))
-        self.pushButton_4.setObjectName("pushButton_4")
+        self.apply_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.apply_btn.setGeometry(QtCore.QRect(690, 20, 93, 28))
+        self.apply_btn.setObjectName("apply_btn")
+
+        self.clear_list_widget_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.clear_list_widget_btn.setGeometry(QtCore.QRect(510, 720, 93, 28))
+        self.clear_list_widget_btn.setObjectName("clear_list_widget_btn")
+
+        self.clear_text_edit_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.clear_text_edit_btn.setGeometry(QtCore.QRect(800, 20, 93, 28))
+        self.clear_text_edit_btn.setObjectName("clear_text_edit_btn")
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
         self.textEdit.setGeometry(QtCore.QRect(430, 20, 231, 31))
         self.textEdit.setObjectName("textEdit")
+        self.textEdit.setPlaceholderText("Filter...")
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         self.tableWidget.setGeometry(QtCore.QRect(60, 70, 1001, 341))
         self.tableWidget.setObjectName("tableWidget")
@@ -90,18 +93,40 @@ class Ui_MainWindow(object):
         self.status_label.setText('Stopped')
         self.status_label.setStyleSheet('color: red')
 
+        # buttons action
         self.start_btn.clicked.connect(self.start_btn_action)
         self.stop_btn.clicked.connect(self.stop_btn_action)
         self.show_btn.clicked.connect(self.show_btn_action)
-        self.clear_btn.clicked.connect(self.clear_btn_action)
+        self.clear_table_widget_btn.clicked.connect(self.clear_table_widget_btn_action)
+        self.apply_btn.clicked.connect(self.apply_btn_action)
+        self.clear_text_edit_btn.clicked.connect(self.clear_text_edit_btn_action)
+        self.clear_list_widget_btn.clicked.connect(self.clear_list_widget_btn_action)
+
+        # make this program responsive
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
+        self.textEdit.setMaximumSize(QtCore.QSize(231, 30))
+        self.gridLayout.addWidget(self.tableWidget, 3, 0, 1, 6)
+        self.gridLayout.addWidget(self.listWidget, 4, 0, 1, 6)
+        self.gridLayout.addWidget(self.textEdit, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.apply_btn, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.clear_text_edit_btn, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.start_btn, 5, 0, 1, 1)
+        self.gridLayout.addWidget(self.stop_btn, 5, 1, 1, 1)
+        self.gridLayout.addWidget(self.show_btn, 5, 2, 1, 1)
+        self.gridLayout.addWidget(self.clear_table_widget_btn, 5, 3, 1, 1)
+        self.gridLayout.addWidget(self.clear_list_widget_btn, 5, 4, 1, 1)
+        self.gridLayout.addWidget(self.status_label, 6, 0, 1, 1)
+
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         # table widget settings
         self.tableWidget.setColumnCount(self.NUMBER_OF_TABLE_WIDGET_COLUMN)
-        names = ['No.', 'IP Version', 'Source', 'Destination', 'Protocol']
-        set_column_names(self.tableWidget, names)
+
+        set_column_names(self.tableWidget, self.COLUMN_NAMES)
 
     def start_btn_action(self):
         run_sniffing_in_thread(self.status_label, self.tableWidget)
@@ -112,20 +137,29 @@ class Ui_MainWindow(object):
     def show_btn_action(self):
         show_info_according_to_selected_row(self.tableWidget.currentRow(), self.listWidget)
 
-    def clear_btn_action(self):
+    def clear_table_widget_btn_action(self):
         clear_table_widget(self.tableWidget)
+
+    def apply_btn_action(self):
+        search_in_table_widget(self.tableWidget, self.textEdit, self.COLUMN_NAMES)
+
+    def clear_text_edit_btn_action(self):
+        clear_text_edit(self.tableWidget, self.textEdit)
+
+    def clear_list_widget_btn_action(self):
+        clear_list_widget(self.listWidget)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label.setText(_translate("MainWindow", "Filter"))
         self.start_btn.setText(_translate("MainWindow", "Start"))
         self.stop_btn.setText(_translate("MainWindow", "Stop"))
         self.show_btn.setText(_translate("MainWindow", "Show More Info"))
         self.show_btn.adjustSize()
-        self.clear_btn.setText(_translate("MainWindow", "Clear"))
-        self.pushButton_3.setText(_translate("MainWindow", "Apply"))
-        self.pushButton_4.setText(_translate("MainWindow", "Clear"))
+        self.clear_table_widget_btn.setText(_translate("MainWindow", "Clear Table"))
+        self.clear_list_widget_btn.setText(_translate("MainWindow", "Clear Info"))
+        self.apply_btn.setText(_translate("MainWindow", "Apply"))
+        self.clear_text_edit_btn.setText(_translate("MainWindow", "Clear"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionopen.setText(_translate("MainWindow", "Open"))
         self.actionsave.setText(_translate("MainWindow", "Save"))
