@@ -72,7 +72,7 @@ def determine_protocol_name(protocol_number: int) -> str:
     elif protocol_number == 3:
         return 'GGP'
     elif protocol_number in (2048, 4):
-        return 'IPv4'
+        return '4'
     elif protocol_number == 5:
         return 'ST'
     elif protocol_number == 6:
