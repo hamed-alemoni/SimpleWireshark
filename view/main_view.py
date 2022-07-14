@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from controller.table_widget_contoller import set_column_names
 from controller.start_button_controller import run_sniffing_in_thread
 from controller.stop_button_controller import stop_sniffing_thread
@@ -18,10 +20,15 @@ from controller.clear_table_widget_button_controller import clear_table_widget
 from controller.apply_button_controller import search_in_table_widget
 from controller.clear_text_edit_button_controller import clear_text_edit
 from controller.clear_list_widget_button_controller import clear_list_widget
+from controller.sniffing import save_info
+from controller.save_as_action_controller import save_as_pcap_files
+from controller.save_action_controller import save_pcap_file
+
 
 class Ui_MainWindow(object):
     NUMBER_OF_TABLE_WIDGET_COLUMN = 5
     COLUMN_NAMES = ['No.', 'IP Version', 'Source', 'Destination', 'Protocol']
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1107, 836)
@@ -92,6 +99,8 @@ class Ui_MainWindow(object):
         self.status_label.move(70, 760)
         self.status_label.setText('Stopped')
         self.status_label.setStyleSheet('color: red')
+        # create shortcut
+        self.actionsave.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
 
         # buttons action
         self.start_btn.clicked.connect(self.start_btn_action)
@@ -101,7 +110,11 @@ class Ui_MainWindow(object):
         self.apply_btn.clicked.connect(self.apply_btn_action)
         self.clear_text_edit_btn.clicked.connect(self.clear_text_edit_btn_action)
         self.clear_list_widget_btn.clicked.connect(self.clear_list_widget_btn_action)
+        # menubar actions
+        self.actionSave_As.triggered.connect(self.save_as_action)
+        self.actionsave.triggered.connect(self.save_action)
 
+        self.file_name = None
         # make this program responsive
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
@@ -117,8 +130,6 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.clear_table_widget_btn, 5, 3, 1, 1)
         self.gridLayout.addWidget(self.clear_list_widget_btn, 5, 4, 1, 1)
         self.gridLayout.addWidget(self.status_label, 6, 0, 1, 1)
-
-
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -148,6 +159,12 @@ class Ui_MainWindow(object):
 
     def clear_list_widget_btn_action(self):
         clear_list_widget(self.listWidget)
+
+    def save_action(self):
+        self.file_name = save_pcap_file(self.file_name)
+
+    def save_as_action(self):
+        self.file_name = save_as_pcap_files()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
