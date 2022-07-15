@@ -28,6 +28,18 @@ def save_info(filename):
 
     wrpcap(fullname, network_packets)
 
+
+def read_pcap_file(filename):
+    global network_packets
+    network_packets.clear()
+    # get file packets
+    new_packets = rdpcap(filename)
+    # add them to current packets
+    network_packets.extend(new_packets)
+
+    return network_packets
+
+
 # extract ethernet header info save it in a list as a Ethernet object
 def get_ethernet_information(packet):
     try:
