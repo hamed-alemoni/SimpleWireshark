@@ -20,14 +20,16 @@ from controller.clear_table_widget_button_controller import clear_table_widget
 from controller.apply_button_controller import search_in_table_widget
 from controller.clear_text_edit_button_controller import clear_text_edit
 from controller.clear_list_widget_button_controller import clear_list_widget
-from controller.sniffing import save_info
 from controller.save_as_action_controller import save_as_pcap_files
 from controller.save_action_controller import save_pcap_file
+from controller.open_action_controller import open_pcap_file
+from sys import exit
 
-
-class Ui_MainWindow(object):
+class Ui_MainWindow(QMainWindow):
     NUMBER_OF_TABLE_WIDGET_COLUMN = 5
     COLUMN_NAMES = ['No.', 'IP Version', 'Source', 'Destination', 'Protocol']
+    def __init__(self):
+        super(Ui_MainWindow, self).__init__()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -101,6 +103,7 @@ class Ui_MainWindow(object):
         self.status_label.setStyleSheet('color: red')
         # create shortcut
         self.actionsave.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
+        self.actionopen.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
 
         # buttons action
         self.start_btn.clicked.connect(self.start_btn_action)
@@ -113,6 +116,8 @@ class Ui_MainWindow(object):
         # menubar actions
         self.actionSave_As.triggered.connect(self.save_as_action)
         self.actionsave.triggered.connect(self.save_action)
+        self.actionopen.triggered.connect(self.open_action)
+        self.actionQuit.triggered.connect(exit)
 
         self.file_name = None
         # make this program responsive
@@ -134,10 +139,13 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+
         # table widget settings
         self.tableWidget.setColumnCount(self.NUMBER_OF_TABLE_WIDGET_COLUMN)
 
         set_column_names(self.tableWidget, self.COLUMN_NAMES)
+
+
 
     def start_btn_action(self):
         run_sniffing_in_thread(self.status_label, self.tableWidget)
@@ -161,10 +169,17 @@ class Ui_MainWindow(object):
         clear_list_widget(self.listWidget)
 
     def save_action(self):
+        # if not self.isWindowModified():
+        #     return
         self.file_name = save_pcap_file(self.file_name)
 
     def save_as_action(self):
+        # if not self.isWindowModified():
+        #     return
         self.file_name = save_as_pcap_files()
+
+    def open_action(self):
+        open_pcap_file(self.tableWidget)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
