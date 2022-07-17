@@ -1,7 +1,7 @@
 from threading import Thread
 from .sniffing import sniffing
 from .table_widget_contoller import write_info_in_table_widget_format
-from .variables import set_check_thread, get_check_thread, set_packets_number, get_packet_number
+from .variables import set_check_thread, get_check_thread, set_packets_number, get_packet_number, set_previous_packets_number
 
 is_thread_created = False
 thread = None
@@ -34,7 +34,9 @@ def status_label_settings(status_label):
 
 def sniffing_loop(table_widget):
     while get_check_thread():
+
         packets_number = get_packet_number()
+        set_previous_packets_number(packets_number)
         # get one sniffed packet
         packet = sniffing()
 
