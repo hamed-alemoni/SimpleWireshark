@@ -24,12 +24,12 @@ from controller.save_as_action_controller import save_as_pcap_files
 from controller.save_action_controller import save_pcap_file
 from controller.open_action_controller import open_pcap_file
 from sys import exit
+from controller.variables import get_packet_number, get_previous_packet_number
 
-class Ui_MainWindow(QMainWindow):
+
+class Ui_MainWindow(object):
     NUMBER_OF_TABLE_WIDGET_COLUMN = 5
     COLUMN_NAMES = ['No.', 'IP Version', 'Source', 'Destination', 'Protocol']
-    def __init__(self):
-        super(Ui_MainWindow, self).__init__()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -117,7 +117,7 @@ class Ui_MainWindow(QMainWindow):
         self.actionSave_As.triggered.connect(self.save_as_action)
         self.actionsave.triggered.connect(self.save_action)
         self.actionopen.triggered.connect(self.open_action)
-        self.actionQuit.triggered.connect(exit)
+        self.actionQuit.triggered.connect(self.exit_action)
 
         self.file_name = None
         # make this program responsive
@@ -139,13 +139,16 @@ class Ui_MainWindow(QMainWindow):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
         # table widget settings
         self.tableWidget.setColumnCount(self.NUMBER_OF_TABLE_WIDGET_COLUMN)
 
         set_column_names(self.tableWidget, self.COLUMN_NAMES)
 
-
+    def check_modified_windows(self):
+        if get_packet_number() != get_previous_packet_number():
+            self.setWindowModified(True)
+            return
+        self.setWindowModified(False)
 
     def start_btn_action(self):
         run_sniffing_in_thread(self.status_label, self.tableWidget)
@@ -169,17 +172,27 @@ class Ui_MainWindow(QMainWindow):
         clear_list_widget(self.listWidget)
 
     def save_action(self):
-        # if not self.isWindowModified():
-        #     return
         self.file_name = save_pcap_file(self.file_name)
 
     def save_as_action(self):
-        # if not self.isWindowModified():
-        #     return
         self.file_name = save_as_pcap_files()
 
     def open_action(self):
         open_pcap_file(self.tableWidget)
+
+    def exit_action(self):
+        self.check_modified_windows()
+        if self.isWindowModified() or self.file_name == '':
+            choice = QMessageBox.question(self, 'Confirm exit...',
+                                          "Do you want to save the information ?",
+                                          QMessageBox.Yes | QMessageBox.No,
+                                          QMessageBox.Yes)
+            if choice == QMessageBox.Yes:
+                self.save_action()
+            else:
+                exit()
+
+        exit()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -199,12 +212,20 @@ class Ui_MainWindow(QMainWindow):
         self.actionQuit.setText(_translate("MainWindow", "Quit"))
 
 
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+    def __init__(self, *args, obj=None, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+
+    def closeEvent(self, event):
+        super(MainWindow, self).exit_action()
+
+
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+
+    win = MainWindow()
+    win.show()
     sys.exit(app.exec_())
